@@ -1,0 +1,7 @@
+KMRE APK installer
+        command=kmre-apk-installer
+        name=KMRE APK Installer
+        can_open_multiple_files=true
+        expects_uris=false
+        requires_terminal=false
+        mime_types=vnd.android.package-archive

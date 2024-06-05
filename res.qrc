@@ -1,0 +1,38 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/back.png</file>
+        <file>res/close_hover.png</file>
+        <file>res/close.png</file>
+        <file>res/max_hover.png</file>
+        <file>res/max.png</file>
+        <file>res/min_hover.png</file>
+        <file>res/min.png</file>
+        <file>res/revert_hover.png</file>
+        <file>res/revert.png</file>
+        <file>res/homepage_hover.png</file>
+        <file>res/homepage.png</file>
+        <file>res/notify.png</file>
+        <file>res/loading.gif</file>
+        <file>res/selected.png</file>
+        <file>res/active.png</file>
+        <file>res/start.png</file>
+        <file>res/stop.png</file>
+        <file>res/refresh.png</file>
+        <file>res/abnormal.svg</file>
+        <file>res/finish1.png</file>
+        <file>res/finish2.png</file>
+        <file>res/tip.svg</file>
+        <file>res/warning.svg</file>
+        <file>res/delete.png</file>
+        <file>res/pause.svg</file>
+        <file>res/start.svg</file>
+        <file>res/stop.svg</file>
+        <file>res/switch.png</file>
+        <file>res/delete2.png</file>
+        <file>translations/kmre-apk-installer_zh_CN.qm</file>
+        <file>res/kmre.svg</file>
+        <file>res/kmre-apk-installer.svg</file>
+        <file>translations/kmre-apk-installer_bo_CN.qm</file>
+    </qresource>
+    <qresource prefix="/qm"/>
+</RCC>

@@ -1,0 +1,17 @@
+[Desktop Entry]
+Name=KMRE APK Installer
+Name[zh_CN]=KMRE APK 安装器
+Name[bo_CN]=KMRE APK སྒྲིག་འཇུག་ཆས།
+Comment=KMRE APK Installer
+Comment[zh_CN]=KMRE APK 安装器
+Comment[bo_CN]=KMRE APK སྒྲག་འཇུག་ཆས།
+GenericName=KMRE APK Installer
+GenericName[zh_CN]=KMRE APK 安装器
+GenericName[bo_CN]=KMRE APK སྒྲག་འཇུག་ཆས།
+Exec=/usr/bin/kmre-apk-installer %F
+Icon=kmre-apk-installer
+MimeType=application/vnd.android.package-archive;
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=PackageManager;Installer
