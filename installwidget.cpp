@@ -426,8 +426,12 @@ void InstallWidget::onAnalysisApkFile()
     //fileSize = QString("%1 Bytes").arg(file_info.size());
     fileSize = QString("%1 KB (%2 MB)").arg(file_info.size()/1024).arg(file_info.size()/1048576);
 
-#ifndef KYLIN_V10
-    if (QFileInfo("/usr/bin/aapt").exists()) {
+//#ifndef KYLIN_V10
+    QProcess aaptTest;
+    aaptTest.start("aapt");
+    aaptTest.waitForStarted();
+    aaptTest.waitForFinished();
+    if (QFileInfo("/usr/bin/aapt").exists() && aaptTest.exitCode() < 120) {
         process.start("aapt", QStringList()<< "d" << "badging" << m_pkgPath);
         process.waitForStarted(5*1000);
         process.waitForFinished(10*1000);//process.waitForFinished(-1);
@@ -573,7 +577,7 @@ void InstallWidget::onAnalysisApkFile()
         m_installButton->setVisible(true);
         m_backButton->setVisible(true);
     }
-#else
+/*#else
     ApkInfo apk { application_label, application_zh_label, file_info.fileName(), version, fileSize };
     QPixmap pixmap;
     pixmap = QPixmap(":/res/kmre.svg");
@@ -582,5 +586,5 @@ void InstallWidget::onAnalysisApkFile()
     this->updateApkInfo(apk);
     m_installButton->setVisible(true);
     m_backButton->setVisible(true);
-#endif
+#endif*/
 }

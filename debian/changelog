@@ -1,3 +1,10 @@
+kmre-apk-installer (3.0.0.1gxde1) UNRELEASED; urgency=medium
+
+  * Non-maintainer upload.
+  * 支持使用 aapt 读取 apk 信息
+
+ -- gfdgd_xi <3025613752@qq.com>  Sat, 28 Dec 2024 21:55:38 +0800
+
 kmre-apk-installer (3.0.0.1) v101; urgency=medium
   
   * BUG号：无
