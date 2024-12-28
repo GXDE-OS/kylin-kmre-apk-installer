@@ -20,7 +20,7 @@ Standards-Version: 3.9.8
 Homepage: https://www.kylinos.cn
 
 Package: kmre-apk-installer
-Architecture: amd64 arm64 loong64
+Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          aapt,
