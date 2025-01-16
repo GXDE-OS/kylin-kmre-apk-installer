@@ -19,6 +19,8 @@
 
 #include "mainwindow.h"
 #include "utils.h"
+#include "backendworker.h"
+#include "copythread.h"
 
 #include <QApplication>
 #include <QtSingleApplication>
@@ -116,6 +118,26 @@ int main(int argc, char *argv[])
         a.sendMessage(command +" "+ apkList.join(" <<sep>> "));
         qDebug() << "kmre-apk-installer had already running!";
         return EXIT_SUCCESS;
+    }
+    else if (apkList.contains("unshow-install") && apkList.count() >= 2) {
+        // 静默安装
+        QString apkPath = apkList.at(1);
+        qDebug() << "APK: " << apkPath;
+        QFileInfo fi(apkPath);
+        QString fileName = fi.fileName();
+        QString destPath = QString("/var/lib/kmre/kmre-%1-%2/data/local/tmp").arg(utils::getUid()).arg(utils::getUserName());
+        bool b = kmre::utils::copyFile(apkPath, QString("%1/%2").arg(destPath).arg(fileName));
+        BackendWorker worker(utils::getUserName(), utils::getUid());
+        worker.installApp(fileName, "", "", "", "");
+        return 0;
+    }
+    else if (apkList.contains("unshow-uninstall") && apkList.count() >= 2) {
+        // 静默卸载
+        QString pkgName = apkList.at(1);
+        qDebug() << "Package Name: " << pkgName;
+        BackendWorker worker(utils::getUserName(), utils::getUid());
+        worker.unIntallApp(pkgName);
+        return 0;
     }
     else {
         MainWindow *w = new MainWindow();
