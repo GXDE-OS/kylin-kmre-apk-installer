@@ -39,8 +39,8 @@ public slots:
     void generateIcon(const QString &pkgName);
 //    void getInstalledAppList();
     QByteArray getInstalledAppListJsonStr();
-    void installApp(const QString &fileName, const QString &pkgName, const QString &application, const QString &applicationZh, const QString &version);
-    void unIntallApp(const QString &appName);
+    bool installApp(const QString &fileName, const QString &pkgName, const QString &application, const QString &applicationZh, const QString &version);
+    bool unIntallApp(const QString &appName);
     void launchApp(const QString &packageName);
     void onGetAndroidEnvInstalled();
 

@@ -117,9 +117,9 @@ int main(int argc, char *argv[])
         QString command = "open_files";
         a.sendMessage(command +" "+ apkList.join(" <<sep>> "));
         qDebug() << "kmre-apk-installer had already running!";
-        return EXIT_SUCCESS;
+        return 114;
     }
-    else if (apkList.contains("unshow-install") && apkList.count() >= 2) {
+    else if (apkList.count() >= 2 && apkList.at(0) == "install") {
         // 静默安装
         QString apkPath = apkList.at(1);
         qDebug() << "APK: " << apkPath;
@@ -128,16 +128,14 @@ int main(int argc, char *argv[])
         QString destPath = QString("/var/lib/kmre/kmre-%1-%2/data/local/tmp").arg(utils::getUid()).arg(utils::getUserName());
         bool b = kmre::utils::copyFile(apkPath, QString("%1/%2").arg(destPath).arg(fileName));
         BackendWorker worker(utils::getUserName(), utils::getUid());
-        worker.installApp(fileName, "", "", "", "");
-        return 0;
+        return worker.installApp(fileName, "", "", "", "") ? EXIT_SUCCESS : EXIT_FAILURE;
     }
-    else if (apkList.contains("unshow-uninstall") && apkList.count() >= 2) {
+    else if (apkList.count() >= 2 && apkList.at(0) == "uninstall") {
         // 静默卸载
         QString pkgName = apkList.at(1);
         qDebug() << "Package Name: " << pkgName;
         BackendWorker worker(utils::getUserName(), utils::getUid());
-        worker.unIntallApp(pkgName);
-        return 0;
+        return worker.unIntallApp(pkgName) ? EXIT_SUCCESS : EXIT_FAILURE;
     }
     else {
         MainWindow *w = new MainWindow();

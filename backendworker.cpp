@@ -417,19 +417,19 @@ QByteArray BackendWorker::getInstalledAppListJsonStr()
    Return:
    Others:
  ************************************************************/
-void BackendWorker::installApp(const QString &fileName, const QString &pkgName, const QString &application, const QString &applicationZh, const QString &version)
+bool BackendWorker::installApp(const QString &fileName, const QString &pkgName, const QString &application, const QString &applicationZh, const QString &version)
 {
 //    m_iconFilePath.clear();
     QThread::sleep(1);
     if (fileName.isEmpty()) {
         emit this->installFinished(fileName, pkgName, false);
-        return;
+        return false;
     }
 
     QString libPath = "/usr/lib/libkmre.so";
     if (!QFile::exists(libPath)) {
         emit this->installFinished(fileName, pkgName, false);
-        return;
+        return false;
     }
 
     void *module_handle;
@@ -437,14 +437,14 @@ void BackendWorker::installApp(const QString &fileName, const QString &pkgName, 
     module_handle = dlopen(libPath.toStdString().c_str(), RTLD_LAZY);
     if (!module_handle) {
         emit this->installFinished(fileName, pkgName, false);
-        return;
+        return false;
     }
     bool (*install_app)(char *filename, char *appname, char *pkgname);
     install_app = (bool(*)(char *, char*, char *))dlsym(module_handle, "install_app");
     if ((module_error = dlerror()) != NULL) {
         dlclose(module_handle);
         emit this->installFinished(fileName, pkgName, false);
-        return;
+        return false;
     }
     //qDebug() << "BackendWorker::installApp " << fileName;
     //filename:apk名称，如 com.tencent.mm_8.0.0.apk
@@ -463,6 +463,7 @@ void BackendWorker::installApp(const QString &fileName, const QString &pkgName, 
         emit this->installFinished(fileName, pkgName, false);
     }
     dlclose(module_handle);
+    return nRes;
 }
 //void BackendWorker::installApp(const QString &fileName, const QString &pkgName, const QString &application, const QString &applicationZh)
 //{
@@ -516,17 +517,17 @@ void BackendWorker::installApp(const QString &fileName, const QString &pkgName, 
    Return:
    Others:
  ************************************************************/
-void BackendWorker::unIntallApp(const QString &appName)
+bool BackendWorker::unIntallApp(const QString &appName)
 {
     if (appName.isEmpty()) {
         emit this->unInstallFinished(appName, false);
-        return;
+        return false;
     }
 
     QString libPath = "/usr/lib/libkmre.so";
     if (!QFile::exists(libPath)) {
         emit this->unInstallFinished(appName, false);
-        return;
+        return false;
     }
 
     void *module_handle;
@@ -534,7 +535,7 @@ void BackendWorker::unIntallApp(const QString &appName)
     module_handle = dlopen(libPath.toStdString().c_str(), RTLD_LAZY);
     if (!module_handle) {
         emit this->unInstallFinished(appName, false);
-        return;
+        return false;
     }
 
     bool (*uninstall_app)(char *appname);
@@ -542,7 +543,7 @@ void BackendWorker::unIntallApp(const QString &appName)
     if ((module_error = dlerror()) != NULL) {
         dlclose(module_handle);
         emit this->unInstallFinished(appName, false);
-        return;
+        return false;
     }
     bool nRes = uninstall_app(const_cast<char *>(appName.toStdString().c_str()));
     if (nRes) {
@@ -552,6 +553,7 @@ void BackendWorker::unIntallApp(const QString &appName)
         emit this->unInstallFinished(appName, false);
     }
     dlclose(module_handle);
+    return nRes;
 }
 
 /***********************************************************
