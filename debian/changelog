@@ -1,10 +1,11 @@
-kmre-apk-installer (3.0.0.2) UNRELEASED; urgency=medium
+kmre-apk-installer (3.0.0.3) UNRELEASED; urgency=medium
 
   * Non-maintainer upload.
   * 支持使用 aapt 读取 apk 信息
   * 支持静默安装和静默卸载
+  * 更改生成的 .desktop 文件名称以及 .desktop 添加 X-GXDE-KMREAPP、X-GXDE-KMRE-PKGNAME 标签
 
- -- gfdgd_xi <3025613752@qq.com>  Thu, 16 Jan 2025 22:42:05 +0800
+ -- gfdgd_xi <3025613752@qq.com>  Sat, 18 Jan 2025 19:44:19 +0800
 
 kmre-apk-installer (3.0.0.1) v101; urgency=medium
   
