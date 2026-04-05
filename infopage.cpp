@@ -27,6 +27,7 @@ InfoPage::InfoPage(QWidget *parent)
     , m_closeBtn(new QPushButton)
     , m_runBtn(new QPushButton)
     , m_tipLabel(new QLabel)
+    , m_iconLabel(new QLabel)
     , m_infoWidget(new QWidget)
 {
     this->setBackgroundRole(QPalette::Base);
@@ -47,10 +48,14 @@ InfoPage::InfoPage(QWidget *parent)
     m_runBtn->setVisible(false);
     m_runBtn->setFixedSize(120, 36);
 
+    m_iconLabel->setFixedSize(96, 96);
+    m_iconLabel->setAlignment(Qt::AlignCenter);
+    
     m_tipLabel->setAlignment(Qt::AlignCenter);
     m_tipLabel->setStyleSheet("QLabel {padding: 20px 0 0 0;}");
 
     QVBoxLayout *centerLayout = new QVBoxLayout;
+    centerLayout->addWidget(m_iconLabel, 0, Qt::AlignHCenter);
     centerLayout->addWidget(m_tipLabel);
     centerLayout->setMargin(0);
 
@@ -76,9 +81,20 @@ InfoPage::InfoPage(QWidget *parent)
     });
 }
 
-void InfoPage::setInfo(const QString &info, const QString &pkgName, bool installSuccess)
+void InfoPage::setInfo(const QString &info, const QString &pkgName, bool installSuccess, const QPixmap &icon)
 {
     m_tipLabel->setText(info);
+    
+    if (!icon.isNull()) {
+        QPixmap scaledIcon = icon.scaled(m_iconLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        m_iconLabel->setPixmap(scaledIcon);
+    } else {
+        // Set default icon if no icon is provided
+        QPixmap defaultIcon = QPixmap(":/res/kmre.svg");
+        defaultIcon = defaultIcon.scaled(m_iconLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        m_iconLabel->setPixmap(defaultIcon);
+    }
+    
     if (installSuccess && !pkgName.isEmpty()) {
         emit signalRunApp();
         //m_runBtn->setVisible(true);

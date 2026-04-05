@@ -31,7 +31,7 @@ class InfoPage : public QWidget
 public:
     explicit InfoPage(QWidget *parent = 0);
 
-    void setInfo(const QString &info, const QString &pkgName, bool installSuccess);
+    void setInfo(const QString &info, const QString &pkgName, bool installSuccess, const QPixmap &icon = QPixmap());
 
 public slots:
     void settip(const QString &fileName);
@@ -44,6 +44,7 @@ private:
     QPushButton *m_closeBtn = nullptr;
     QPushButton *m_runBtn = nullptr;
     QLabel *m_tipLabel = nullptr;
+    QLabel *m_iconLabel = nullptr;
     QWidget *m_infoWidget = nullptr;
 };
 

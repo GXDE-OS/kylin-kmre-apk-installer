@@ -23,6 +23,7 @@
 #include <QMainWindow>
 #include <QStackedLayout>
 #include <QThread>
+#include <QPixmap>
 
 class TitleBar;
 class ImportWidget;
@@ -49,7 +50,7 @@ public slots:
 #endif
 
     void onApkPackagesSelected(const QStringList &packages);
-    void showInfoPage(const QString &info, const QString &pkgName, bool installSuccess);
+    void showInfoPage(const QString &info, const QString &pkgName, bool installSuccess, const QPixmap &icon = QPixmap());
 
 signals:
     void requestAnalysisApkFile();

@@ -209,10 +209,10 @@ void MainWindow::initBackend()
         QString elided_text = fm.elidedText(fileName, Qt::ElideMiddle, 300);
         this->emit requestfileName(fileName);
         if (result) {
-            this->showInfoPage(QString(tr("%1 install successfully")).arg(elided_text), pkgName, result);
+            this->showInfoPage(QString(tr("%1 install successfully")).arg(elided_text), pkgName, result, m_installWidget->getIcon());
         }
         else {
-            this->showInfoPage(QString(tr("%1 install failed")).arg(elided_text), pkgName, result);
+            this->showInfoPage(QString(tr("%1 install failed")).arg(elided_text), pkgName, result, m_installWidget->getIcon());
         }
         m_installWidget->reset();
     }, Qt::QueuedConnection);
@@ -288,11 +288,11 @@ void MainWindow::keyPressEvent(QKeyEvent *e)
     }
 }
 
-void MainWindow::showInfoPage(const QString &info, const QString &pkgName, bool installSuccess)
+void MainWindow::showInfoPage(const QString &info, const QString &pkgName, bool installSuccess, const QPixmap &icon)
 {
     if (m_infoWidget) {
         m_centralLayout->setCurrentWidget(m_infoWidget);
-        m_infoWidget->setInfo(info, pkgName, installSuccess);
+        m_infoWidget->setInfo(info, pkgName, installSuccess, icon);
     }
 }
 

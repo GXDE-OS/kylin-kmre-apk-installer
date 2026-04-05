@@ -30,6 +30,8 @@
 #include <QProcess>
 #include <QFileInfo>
 #include <QDir>
+#include <QDirIterator>
+#include <algorithm>
 
 using namespace kmre;
 
@@ -427,38 +429,69 @@ void InstallWidget::onAnalysisApkFile()
     fileSize = QString("%1 KB (%2 MB)").arg(file_info.size()/1024).arg(file_info.size()/1048576);
 
 //#ifndef KYLIN_V10
+    qDebug() << "Processing APK path:" << m_pkgPath;
+    qDebug() << "APK path exists:" << QFileInfo(m_pkgPath).exists();
+    
     QProcess aaptTest;
     aaptTest.start("aapt");
     aaptTest.waitForStarted();
     aaptTest.waitForFinished();
+    qDebug() << "AAPT test exit code:" << aaptTest.exitCode();
+    qDebug() << "AAPT exists:" << QFileInfo("/usr/bin/aapt").exists();
+    
     if (QFileInfo("/usr/bin/aapt").exists() && aaptTest.exitCode() < 120) {
+        qDebug() << "Starting aapt command with path:" << m_pkgPath;
         process.start("aapt", QStringList()<< "d" << "badging" << m_pkgPath);
-        process.waitForStarted(5*1000);
-        process.waitForFinished(10*1000);//process.waitForFinished(-1);
-        const QString output = process.readAllStandardOutput();//process.readAll();
-        //qDebug() << "aapt output:" << output;
+        bool started = process.waitForStarted(5*1000);
+        qDebug() << "AAPT process started:" << started;
+        if (!started) {
+            qDebug() << "Failed to start aapt process";
+            emit this->sigError(1);
+            return;
+        }
+        
+        bool finished = process.waitForFinished(10*1000);
+        qDebug() << "AAPT process finished:" << finished;
+        qDebug() << "AAPT exit code:" << process.exitCode();
+        
+        const QString output = process.readAllStandardOutput();
+        const QString error = process.readAllStandardError();
+        qDebug() << "AAPT output (first 500 chars):" << output.left(500);
+        qDebug() << "AAPT error:" << error;
+        
         if (output.isEmpty() || output.isNull()) {
+            qDebug() << "AAPT output is empty, emitting error";
             emit this->sigError(1);
             return;
         }
         for (const auto &line : output.split('\n')) {
             if (line.startsWith("package:")) {
-                //qDebug() << "aapt aapt info:" << line;
+                qDebug() << "Processing package line:" << line;
                 const QStringList &info = line.split(' ');
-                if (info.size() >= 5) {
-                    for (int i=0;i<info.size();i++) {
-                        if (info.at(i).startsWith("name=")) {
-                            const QStringList &nameinfo = info.at(i).split('=');
+                qDebug() << "Package line split into" << info.size() << "parts";
+                
+                for (int i=0;i<info.size();i++) {
+                    qDebug() << "Package part" << i << ":" << info.at(i);
+                    if (info.at(i).startsWith("name=")) {
+                        const QStringList &nameinfo = info.at(i).split('=');
+                        if (nameinfo.size() >= 2) {
                             m_pkgName = nameinfo.at(1).replace("\'", "").trimmed();//com.rightware.BasemarkOSII
+                            qDebug() << "Extracted package name:" << m_pkgName;
+                        } else {
+                            qDebug() << "Failed to extract package name: nameinfo.size() =" << nameinfo.size();
                         }
-                        if (info.at(i).startsWith("versionName=")) {
-                            const QStringList &versioninfo = info.at(i).split('=');
+                    }
+                    if (info.at(i).startsWith("versionName=")) {
+                        const QStringList &versioninfo = info.at(i).split('=');
+                        if (versioninfo.size() >= 2) {
                             version = versioninfo.at(1).replace("\'", "").trimmed();//2.0
                             m_version = version;
+                            qDebug() << "Extracted version:" << version;
+                        } else {
+                            qDebug() << "Failed to extract version: versioninfo.size() =" << versioninfo.size();
                         }
                     }
                 }
-                //package: name='com.ludashi.benchmark' versionCode='169' versionName='9.1.2.19.0816' platformBuildVersionName=''
             }
             if (line.startsWith("application-label:")) {//可能不存在该行
                 //qDebug() << "aapt application-label info:" << line;
@@ -483,66 +516,65 @@ void InstallWidget::onAnalysisApkFile()
                 }
             }
             if (line.startsWith("application: label=")) {
-                //qDebug() << "aapt application label info:" << line;// application: label='State Council' icon='res/drawable-anydpi-v26/application_icon.xml'
-                int firstIndex = line.indexOf(QChar('\''));
-                int secondIndex = line.indexOf(QChar('\''), strlen("application: label='"));
-                QString labelContent = line.left(secondIndex);
-                QString labelStr = labelContent.right(labelContent.length() - 1 - firstIndex);
-                if (application_label.isEmpty()) {
-                    application_label = labelStr;
-                }
-                if (application_zh_label.isEmpty()) {
-                    application_zh_label = labelStr;
+                qDebug() << "Processing application line:" << line;
+                
+                // Extract label from application line
+                int labelIndex = line.indexOf("label='");
+                if (labelIndex != -1) {
+                    int firstIndex = labelIndex + 7; // Length of "label='"
+                    int secondIndex = line.indexOf(QChar('\''), firstIndex);
+                    if (secondIndex != -1) {
+                        QString labelStr = line.mid(firstIndex, secondIndex - firstIndex);
+                        qDebug() << "Extracted label from application:" << labelStr;
+                        if (application_label.isEmpty()) {
+                            application_label = labelStr;
+                        }
+                        if (application_zh_label.isEmpty()) {
+                            application_zh_label = labelStr;
+                        }
+                    }
                 }
 
                 const QStringList &info = line.split(' ');
                 for (int i=0;i<info.size();i++) {
-//                    if (info.at(i).startsWith("label=")) {
-//                        const QStringList &labelinfo = info.at(i).split('=');//labelinfo.at(1)可能为空，如：application: label='' icon='res/drawable-mdpi/ic_launcher.png'
-//                        if (application_label.isEmpty()) {
-//                            application_label = labelinfo.at(1).replace("\'", "").trimmed();
-//                        }
-//                        if (application_zh_label.isEmpty()) {
-//                            application_zh_label = labelinfo.at(1).replace("\'", "").trimmed();
-//                        }
-//                    }
                     if (info.at(i).startsWith("icon=")) {
                         //icon path
                         if (iconPath.isEmpty()) {
                             const QStringList &iconinfo = info.at(i).split('=');
                             iconPath = iconinfo.at(1).replace("\'", "").trimmed();
+                            qDebug() << "Extracted icon path from application:" << iconPath;
                         }
                     }
                 }
             }
             if (line.startsWith("launchable-activity:")) {//launchable-activity: name='com.rightware.BasemarkOSII.BasemarkOSII'  label='Basemark OS II' icon=''
-                int firstIndex = line.indexOf(QChar('\''));
-                int secondIndex = line.indexOf(QChar('\''), strlen("application: label='"));
-                QString labelContent = line.left(secondIndex);
-                QString labelStr = labelContent.right(labelContent.length() - 1 - firstIndex);
-                if (application_label.isEmpty()) {
-                    application_label = labelStr;
-                }
-                if (application_zh_label.isEmpty()) {
-                    application_zh_label = labelStr;
+                qDebug() << "Processing launchable-activity line:" << line;
+                
+                // Extract label from launchable-activity line
+                int labelIndex = line.indexOf("label='");
+                if (labelIndex != -1) {
+                    int firstIndex = labelIndex + 7; // Length of "label='"
+                    int secondIndex = line.indexOf(QChar('\''), firstIndex);
+                    if (secondIndex != -1) {
+                        QString labelStr = line.mid(firstIndex, secondIndex - firstIndex);
+                        qDebug() << "Extracted label from launchable-activity:" << labelStr;
+                        if (application_label.isEmpty()) {
+                            application_label = labelStr;
+                        }
+                        if (application_zh_label.isEmpty()) {
+                            application_zh_label = labelStr;
+                        }
+                    }
                 }
 
                 const QStringList &info = line.split(' ');
                 for (int i=0;i<info.size();i++) {
-//                    if (info.at(i).startsWith("label=")) {
-//                        const QStringList &labelinfo = info.at(i).split('=');
-//                        if (application_label.isEmpty()) {
-//                            application_label = labelinfo.at(1).replace("\'", "").trimmed();
-//                        }
-//                        if (application_zh_label.isEmpty()) {
-//                            application_zh_label = labelinfo.at(1).replace("\'", "").trimmed();
-//                        }
-//                    }
                     if (info.at(i).startsWith("icon=")) {
                         //icon path
                         if (iconPath.isEmpty()) {
                             const QStringList &iconinfo = info.at(i).split('=');
                             iconPath = iconinfo.at(1).replace("\'", "").trimmed();
+                            qDebug() << "Extracted icon path from launchable-activity:" << iconPath;
                         }
                     }
                 }
@@ -559,9 +591,247 @@ void InstallWidget::onAnalysisApkFile()
 
             ApkInfo apk { application_label, application_zh_label, m_pkgName, version, fileSize };
             QPixmap pixmap;
-            pixmap = QPixmap(":/res/kmre.svg");
-            pixmap = pixmap.scaled(m_iconLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-            m_iconLabel->setPixmap(pixmap);
+            
+            // Try to extract and load the APK icon
+            QString extractedIconPath;
+            
+            // Create temporary directory for extracted icon
+            QString tempDir = QDir::tempPath() + "/kmre-apk-installer/" + m_pkgName;
+            qDebug() << "Temp directory:" << tempDir;
+            QDir().mkpath(tempDir);
+            
+            // Use aapt to get the icon information
+            QProcess aaptProcess;
+            aaptProcess.start("aapt", QStringList() << "dump" << "badging" << m_pkgPath);
+            aaptProcess.waitForFinished();
+            QString aaptOutput = aaptProcess.readAllStandardOutput();
+            qDebug() << "AAPT output (first 1000 chars):" << aaptOutput.left(1000);
+            
+            // Try to find the icon path from aapt output
+            QString iconPath;
+            QRegExp iconRegex("icon='([^']+)'");
+            if (iconRegex.indexIn(aaptOutput) != -1) {
+                iconPath = iconRegex.cap(1);
+                qDebug() << "Found icon path from aapt:" << iconPath;
+                
+                // Try to extract the icon file
+                QProcess unzipProcess;
+                unzipProcess.start("unzip", QStringList() << "-o" << m_pkgPath << iconPath << "-d" << tempDir);
+                unzipProcess.waitForFinished();
+                qDebug() << "Unzip process for icon exit code:" << unzipProcess.exitCode();
+                qDebug() << "Unzip process output:" << unzipProcess.readAllStandardOutput();
+                qDebug() << "Unzip process error:" << unzipProcess.readAllStandardError();
+                
+                // Check if the extracted file exists
+                extractedIconPath = tempDir + "/" + iconPath;
+                qDebug() << "Extracted icon path:" << extractedIconPath;
+                
+                if (QFile::exists(extractedIconPath)) {
+                    qDebug() << "Extracted icon file exists";
+                    qDebug() << "Extracted file size:" << QFileInfo(extractedIconPath).size() << "bytes";
+                    
+                    // If it's an XML file, try to find the actual image file
+                    if (extractedIconPath.endsWith(".xml")) {
+                        qDebug() << "Extracted file is an XML, trying to find actual image";
+                        
+                        // Read the XML file to see if it references an actual image
+                        QFile xmlFile(extractedIconPath);
+                        if (xmlFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                            QString xmlContent = xmlFile.readAll();
+                            qDebug() << "XML content (first 500 chars):" << xmlContent.left(500);
+                            xmlFile.close();
+                        }
+                        
+                        // Try to extract all image files from the APK
+                        QProcess unzipProcess2;
+                        unzipProcess2.start("unzip", QStringList() << "-o" << m_pkgPath << "*.png" << "*.webp" << "*.jpg" << "*.jpeg" << "-d" << tempDir);
+                        unzipProcess2.waitForFinished();
+                        qDebug() << "Unzip process for image files exit code:" << unzipProcess2.exitCode();
+                        qDebug() << "Unzip process output:" << unzipProcess2.readAllStandardOutput();
+                        qDebug() << "Unzip process error:" << unzipProcess2.readAllStandardError();
+                        
+                        // Look for any image files in the temp directory
+                        QStringList imageFiles;
+                        
+                        // Use QDirIterator to recursively find all image files
+                        QDirIterator it(tempDir, QDir::Files, QDirIterator::Subdirectories);
+                        while (it.hasNext()) {
+                            QString filePath = it.next();
+                            QFileInfo fileInfo(filePath);
+                            QString extension = fileInfo.suffix().toLower();
+                            if (extension == "png" || extension == "webp" || extension == "jpg" || extension == "jpeg") {
+                                imageFiles << filePath.replace(tempDir + "/", "");
+                            }
+                        }
+                        
+                        qDebug() << "Found image files:" << imageFiles;
+                        qDebug() << "Number of image files found:" << imageFiles.size();
+                        
+                        if (!imageFiles.isEmpty()) {
+                            // Try to find the most likely icon file
+                            QString bestIconPath;
+                            foreach (const QString &imgPath, imageFiles) {
+                                qDebug() << "Checking image file:" << imgPath;
+                                if (imgPath.contains("icon", Qt::CaseInsensitive) || 
+                                    imgPath.contains("launcher", Qt::CaseInsensitive)) {
+                                    bestIconPath = imgPath;
+                                    qDebug() << "Found icon candidate:" << bestIconPath;
+                                    break;
+                                }
+                            }
+                            
+                            // If no icon-specific file found, use the first image
+                            if (bestIconPath.isEmpty() && !imageFiles.isEmpty()) {
+                                bestIconPath = imageFiles.first();
+                                qDebug() << "No icon-specific file found, using first image:" << bestIconPath;
+                            }
+                            
+                            if (!bestIconPath.isEmpty()) {
+                                extractedIconPath = tempDir + "/" + bestIconPath;
+                                qDebug() << "Selected icon file:" << extractedIconPath;
+                                qDebug() << "Selected icon file size:" << QFileInfo(extractedIconPath).size() << "bytes";
+                            }
+                        }
+                    }
+                    
+                    // Try to load the extracted icon
+                    if (QFile::exists(extractedIconPath)) {
+                        qDebug() << "Trying to load icon from:" << extractedIconPath;
+                        if (pixmap.load(extractedIconPath)) {
+                            qDebug() << "Icon loaded successfully, size:" << pixmap.size();
+                            pixmap = pixmap.scaled(m_iconLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                            m_iconLabel->setPixmap(pixmap);
+                            qDebug() << "Icon set to label successfully";
+                        } else {
+                            qDebug() << "Failed to load icon file";
+                            qDebug() << "File exists:" << QFile::exists(extractedIconPath);
+                            qDebug() << "File size:" << QFileInfo(extractedIconPath).size() << "bytes";
+                            qDebug() << "File permissions:" << QFileInfo(extractedIconPath).permissions();
+                        }
+                    }
+                } else {
+                    qDebug() << "Extracted icon file does not exist";
+                }
+            } else {
+                qDebug() << "No icon path found in aapt output";
+            }
+            
+            // If no icon found yet, try to extract all image files from the APK
+            if (pixmap.isNull()) {
+                qDebug() << "No icon found yet, trying to extract all image files";
+                
+                // Try to extract all image files from the APK
+                QProcess unzipProcess;
+                unzipProcess.start("unzip", QStringList() << "-o" << m_pkgPath << "*.png" << "*.webp" << "*.jpg" << "*.jpeg" << "-d" << tempDir);
+                unzipProcess.waitForFinished();
+                qDebug() << "Unzip process for image files exit code:" << unzipProcess.exitCode();
+                qDebug() << "Unzip process output:" << unzipProcess.readAllStandardOutput();
+                qDebug() << "Unzip process error:" << unzipProcess.readAllStandardError();
+                
+                // Look for any image files in the temp directory
+                QStringList imageFiles;
+                
+                // Use QDirIterator to recursively find all image files
+                QDirIterator it(tempDir, QDir::Files, QDirIterator::Subdirectories);
+                while (it.hasNext()) {
+                    QString filePath = it.next();
+                    QFileInfo fileInfo(filePath);
+                    QString extension = fileInfo.suffix().toLower();
+                    if (extension == "png" || extension == "webp" || extension == "jpg" || extension == "jpeg") {
+                        imageFiles << filePath.replace(tempDir + "/", "");
+                    }
+                }
+                
+                qDebug() << "Found image files:" << imageFiles;
+                qDebug() << "Number of image files found:" << imageFiles.size();
+                
+                if (!imageFiles.isEmpty()) {
+                    // Use the first image file as the icon
+                    extractedIconPath = tempDir + "/" + imageFiles.first();
+                    qDebug() << "Selected icon file:" << extractedIconPath;
+                    qDebug() << "Selected icon file size:" << QFileInfo(extractedIconPath).size() << "bytes";
+                    
+                    // Try to load the extracted icon
+                    if (pixmap.load(extractedIconPath)) {
+                        qDebug() << "Icon loaded successfully, size:" << pixmap.size();
+                        pixmap = pixmap.scaled(m_iconLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                        m_iconLabel->setPixmap(pixmap);
+                        qDebug() << "Icon set to label successfully";
+                    } else {
+                        qDebug() << "Failed to load icon file";
+                        qDebug() << "File exists:" << QFile::exists(extractedIconPath);
+                        qDebug() << "File size:" << QFileInfo(extractedIconPath).size() << "bytes";
+                        qDebug() << "File permissions:" << QFileInfo(extractedIconPath).permissions();
+                    }
+                }
+            }
+            
+            // If no icon found yet, try to extract all files from the APK and look for images
+            if (pixmap.isNull()) {
+                qDebug() << "No icon found yet, trying to list all files in APK";
+                
+                // Try to list all files in the APK
+                QProcess unzipListProcess;
+                unzipListProcess.start("unzip", QStringList() << "-l" << m_pkgPath);
+                unzipListProcess.waitForFinished();
+                QString unzipListOutput = unzipListProcess.readAllStandardOutput();
+                qDebug() << "APK file list (first 1000 chars):" << unzipListOutput.left(1000);
+                
+                // Try to find any image files in the APK
+                QRegExp imageFileRegex("\.(png|webp|jpg|jpeg)$", Qt::CaseInsensitive);
+                QStringList lines = unzipListOutput.split("\n");
+                QStringList apkImageFiles;
+                foreach (const QString &line, lines) {
+                    if (imageFileRegex.indexIn(line) != -1) {
+                        // Extract the filename from the line
+                        QStringList parts = line.split(" ", QString::SkipEmptyParts);
+                        if (parts.size() >= 5) {
+                            QString fileName = parts.mid(4).join(" ");
+                            apkImageFiles << fileName;
+                        }
+                    }
+                }
+                qDebug() << "Found image files in APK:" << apkImageFiles;
+                qDebug() << "Number of image files in APK:" << apkImageFiles.size();
+                
+                // Try to extract the first image file found
+                if (!apkImageFiles.isEmpty()) {
+                    QString firstImageFile = apkImageFiles.first();
+                    qDebug() << "Trying to extract first image file from APK:" << firstImageFile;
+                    
+                    QProcess unzipProcess;
+                    unzipProcess.start("unzip", QStringList() << "-o" << m_pkgPath << firstImageFile << "-d" << tempDir);
+                    unzipProcess.waitForFinished();
+                    qDebug() << "Unzip process exit code:" << unzipProcess.exitCode();
+                    qDebug() << "Unzip process output:" << unzipProcess.readAllStandardOutput();
+                    qDebug() << "Unzip process error:" << unzipProcess.readAllStandardError();
+                    
+                    extractedIconPath = tempDir + "/" + firstImageFile;
+                    qDebug() << "Extracted image path:" << extractedIconPath;
+                    
+                    if (QFile::exists(extractedIconPath)) {
+                        qDebug() << "Extracted image file exists, size:" << QFileInfo(extractedIconPath).size() << "bytes";
+                        if (pixmap.load(extractedIconPath)) {
+                            qDebug() << "Icon loaded successfully, size:" << pixmap.size();
+                            pixmap = pixmap.scaled(m_iconLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                            m_iconLabel->setPixmap(pixmap);
+                            qDebug() << "Icon set to label successfully";
+                        } else {
+                            qDebug() << "Failed to load extracted image file";
+                        }
+                    } else {
+                        qDebug() << "Extracted image file does not exist";
+                    }
+                }
+            }
+            
+            // If icon extraction failed, use default icon
+            if (pixmap.isNull()) {
+                pixmap = QPixmap(":/res/kmre.svg");
+                pixmap = pixmap.scaled(m_iconLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                m_iconLabel->setPixmap(pixmap);
+            }
+            
             this->updateApkInfo(apk);
             m_installButton->setVisible(true);
             m_backButton->setVisible(true);
