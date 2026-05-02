@@ -3,19 +3,14 @@ Section: x11
 Priority: optional
 Maintainer: lixiang <lixiang@kylinos.cn>
 Build-Depends: debhelper (>=9),
+               cmake,
+               make,
                pkg-config,
-               qtbase5-dev (>= 5.1),
-               qt5-qmake,
-               qt5-default | qtchooser,
-               qtscript5-dev,
-               qttools5-dev-tools,
-               qtbase5-dev-tools,
-               libqt5x11extras5-dev,
-               libqt5widgets5,
-               libqt5concurrent5,
+               qt6-base-dev (>= 6.0),
+               qt6-tools-dev,
+               qt6-svg-dev,
                libx11-dev,
                libssl-dev,
-               libqt5svg5-dev,
 Standards-Version: 3.9.8
 Homepage: https://www.kylinos.cn
 
