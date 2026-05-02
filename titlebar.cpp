@@ -26,7 +26,6 @@
 #include <QHBoxLayout>
 #include <QVariant>
 #include <QMouseEvent>
-#include <QX11Info>
 #include <X11/Xlib.h>
 
 

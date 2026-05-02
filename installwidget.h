@@ -55,7 +55,7 @@ public:
 
     void setPkgPath(const QString &pkgPath);
     QString getPkgName() { return m_pkgName; }//TODO
-    QPixmap getIcon() const { return m_iconLabel->pixmap() ? *m_iconLabel->pixmap() : QPixmap(); }
+    QPixmap getIcon() const { return !m_iconLabel->pixmap().isNull() ? m_iconLabel->pixmap().copy() : QPixmap(); }
     void setBackendWorker(BackendWorker *worker) {m_backendWorker = worker;}
     void appendLine(const char *key, const QString &value);
     void updateWaringInfo();

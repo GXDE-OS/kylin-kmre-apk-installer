@@ -206,8 +206,7 @@ bool BackendWorker::generateDesktop(const QString &pkgName, const QString &appli
             "Comment=" + application + "\n"
             "Comment[zh_CN]=" + applicationZh + "\n"
             "Exec=/usr/bin/startapp " + pkgName + "\n"
-            "Icon=" + QDir::homePath() + "/.local/share/icons/" + pkgName + ".svg"
-            << endl;
+            "Icon=" + QDir::homePath() + "/.local/share/icons/" + pkgName + ".svg\n";
     }
     else {
         out << "[Desktop Entry]\n"
@@ -223,8 +222,7 @@ bool BackendWorker::generateDesktop(const QString &pkgName, const QString &appli
             "Comment=" + application + "\n"
             "Comment[zh_CN]=" + applicationZh + "\n"
             "Exec=/usr/bin/startapp " + pkgName + " " + version + "\n"
-            "Icon=" + QDir::homePath() + "/.local/share/icons/" + pkgName + ".svg"
-            << endl;
+            "Icon=" + QDir::homePath() + "/.local/share/icons/" + pkgName + ".svg\n";
     }
     out.flush();
     file.close();

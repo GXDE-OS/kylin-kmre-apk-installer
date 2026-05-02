@@ -39,7 +39,7 @@ InfoPage::InfoPage(QWidget *parent)
     btnsLayout->addWidget(m_runBtn);
     btnsLayout->addWidget(m_closeBtn);
     btnsLayout->addStretch();
-    btnsLayout->setMargin(0);
+    btnsLayout->setContentsMargins(0, 0, 0, 0);
 
     m_closeBtn->setText(tr("Close"));
     m_closeBtn->setFixedSize(120, 36);
@@ -57,7 +57,7 @@ InfoPage::InfoPage(QWidget *parent)
     QVBoxLayout *centerLayout = new QVBoxLayout;
     centerLayout->addWidget(m_iconLabel, 0, Qt::AlignHCenter);
     centerLayout->addWidget(m_tipLabel);
-    centerLayout->setMargin(0);
+    centerLayout->setContentsMargins(0, 0, 0, 0);
 
     m_infoWidget->setLayout(centerLayout);
 

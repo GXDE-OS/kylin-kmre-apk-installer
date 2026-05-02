@@ -32,6 +32,7 @@
 #include <QDir>
 #include <QDirIterator>
 #include <algorithm>
+#include <QRegularExpression>
 
 using namespace kmre;
 
@@ -609,9 +610,10 @@ void InstallWidget::onAnalysisApkFile()
             
             // Try to find the icon path from aapt output
             QString iconPath;
-            QRegExp iconRegex("icon='([^']+)'");
-            if (iconRegex.indexIn(aaptOutput) != -1) {
-                iconPath = iconRegex.cap(1);
+            QRegularExpression iconRegex("icon='([^']+)'");
+            QRegularExpressionMatch match = iconRegex.match(aaptOutput);
+            if (match.hasMatch()) {
+                iconPath = match.captured(1);
                 qDebug() << "Found icon path from aapt:" << iconPath;
                 
                 // Try to extract the icon file
@@ -778,13 +780,12 @@ void InstallWidget::onAnalysisApkFile()
                 qDebug() << "APK file list (first 1000 chars):" << unzipListOutput.left(1000);
                 
                 // Try to find any image files in the APK
-                QRegExp imageFileRegex("\.(png|webp|jpg|jpeg)$", Qt::CaseInsensitive);
+                QRegularExpression imageFileRegex("\\.(png|webp|jpg|jpeg)$", QRegularExpression::CaseInsensitiveOption);
                 QStringList lines = unzipListOutput.split("\n");
                 QStringList apkImageFiles;
                 foreach (const QString &line, lines) {
-                    if (imageFileRegex.indexIn(line) != -1) {
-                        // Extract the filename from the line
-                        QStringList parts = line.split(" ", QString::SkipEmptyParts);
+                    if (imageFileRegex.match(line).hasMatch()) {
+                        QStringList parts = line.split(" ", Qt::SkipEmptyParts);
                         if (parts.size() >= 5) {
                             QString fileName = parts.mid(4).join(" ");
                             apkImageFiles << fileName;
