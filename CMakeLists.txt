@@ -11,7 +11,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt5 Qt6 REQUIRED COMPONENTS Core Gui Widgets Network Concurrent DBus Svg)
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core Gui Widgets Network Concurrent DBus Svg)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Gui Widgets Network Concurrent DBus Svg)
 
 if(QT_VERSION_MAJOR EQUAL 5)
