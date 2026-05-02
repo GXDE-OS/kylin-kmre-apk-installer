@@ -20,7 +20,7 @@ endif()
 
 find_package(PkgConfig REQUIRED)
 
-find_program(LRELEASE_EXECUTABLE lrelease)
+find_program(LRELEASE_EXECUTABLE /usr/lib/qt6/bin/lrelease)
 if(NOT LRELEASE_EXECUTABLE)
     message(FATAL_ERROR "lrelease not found!")
 endif()
