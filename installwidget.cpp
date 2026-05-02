@@ -476,7 +476,7 @@ void InstallWidget::onAnalysisApkFile()
                     if (info.at(i).startsWith("name=")) {
                         const QStringList &nameinfo = info.at(i).split('=');
                         if (nameinfo.size() >= 2) {
-                            m_pkgName = nameinfo.at(1).replace("\'", "").trimmed();//com.rightware.BasemarkOSII
+                            m_pkgName = QString(nameinfo.at(1)).replace("\'", "").trimmed();//com.rightware.BasemarkOSII
                             qDebug() << "Extracted package name:" << m_pkgName;
                         } else {
                             qDebug() << "Failed to extract package name: nameinfo.size() =" << nameinfo.size();
@@ -485,7 +485,7 @@ void InstallWidget::onAnalysisApkFile()
                     if (info.at(i).startsWith("versionName=")) {
                         const QStringList &versioninfo = info.at(i).split('=');
                         if (versioninfo.size() >= 2) {
-                            version = versioninfo.at(1).replace("\'", "").trimmed();//2.0
+                            version = QString(versioninfo.at(1)).replace("\'", "").trimmed();//2.0
                             m_version = version;
                             qDebug() << "Extracted version:" << version;
                         } else {
@@ -498,21 +498,21 @@ void InstallWidget::onAnalysisApkFile()
                 //qDebug() << "aapt application-label info:" << line;
                 const QStringList &info = line.split(':');
                 if (info.size() == 2) {
-                    application_label = info.at(1).replace("\'", "").trimmed();
+                    application_label = QString(info.at(1)).replace("\'", "").trimmed();
                 }
             }
             if (line.startsWith("application-label-zh-CN:")) {//可能不存在该行
                 //qDebug() << "aapt application-label-zh-CN info:" << line;
                 const QStringList &info = line.split(':');
                 if (info.size() == 2) {
-                    application_zh_label = info.at(1).replace("\'", "").trimmed();
+                    application_zh_label = QString(info.at(1)).replace("\'", "").trimmed();
                 }
             }
             if (line.startsWith("application-label-zh:")) {//可能不存在该行
                 const QStringList &info = line.split(':');
                 if (info.size() == 2) {
                     if (application_zh_label.isEmpty()) {
-                        application_zh_label = info.at(1).replace("\'", "").trimmed();
+                        application_zh_label = QString(info.at(1)).replace("\'", "").trimmed();
                     }
                 }
             }
@@ -542,7 +542,7 @@ void InstallWidget::onAnalysisApkFile()
                         //icon path
                         if (iconPath.isEmpty()) {
                             const QStringList &iconinfo = info.at(i).split('=');
-                            iconPath = iconinfo.at(1).replace("\'", "").trimmed();
+                            iconPath = QString(iconinfo.at(1)).replace("\'", "").trimmed();
                             qDebug() << "Extracted icon path from application:" << iconPath;
                         }
                     }
@@ -574,7 +574,7 @@ void InstallWidget::onAnalysisApkFile()
                         //icon path
                         if (iconPath.isEmpty()) {
                             const QStringList &iconinfo = info.at(i).split('=');
-                            iconPath = iconinfo.at(1).replace("\'", "").trimmed();
+                            iconPath = QString(iconinfo.at(1)).replace("\'", "").trimmed();
                             qDebug() << "Extracted icon path from launchable-activity:" << iconPath;
                         }
                     }

@@ -56,8 +56,7 @@ int main(int argc, char *argv[])
 //        qputenv("QT_QPA_PLATFORM", "wayland");
 //    }
 
-    // 适配4K屏
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0))
+    #if (QT_VERSION >= QT_VERSION_CHECK(5, 12, 0) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
@@ -90,7 +89,7 @@ int main(int argc, char *argv[])
     }
     QTranslator qt_translator;
     if (locale == "zh_CN") {
-        if(!qt_translator.load("qt_" + locale + ".qm", QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
+        if(!qt_translator.load("qt_" + locale + ".qm", QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
             qDebug() << "Load translation file："<< "qt_" + locale + ".qm" << " failed!";
         else
             a.installTranslator(&qt_translator);
