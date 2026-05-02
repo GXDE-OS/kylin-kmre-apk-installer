@@ -19,6 +19,25 @@ if(QT_VERSION_MAJOR EQUAL 5)
 endif()
 
 find_package(PkgConfig REQUIRED)
+
+find_program(LRELEASE_EXECUTABLE lrelease)
+if(NOT LRELEASE_EXECUTABLE)
+    message(FATAL_ERROR "lrelease not found!")
+endif()
+
+file(GLOB TS_FILES translations/*.ts)
+foreach(ts_file ${TS_FILES})
+    string(REPLACE ".ts" ".qm" qm_file "${ts_file}")
+    add_custom_command(
+        OUTPUT "${qm_file}"
+        COMMAND ${LRELEASE_EXECUTABLE} "${ts_file}" -qm "${qm_file}"
+        MAIN_DEPENDENCY "${ts_file}"
+        COMMENT "Compiling translation ${ts_file}"
+    )
+    list(APPEND QM_FILES "${qm_file}")
+endforeach()
+
+add_custom_target(translations ALL DEPENDS ${QM_FILES})
 pkg_check_modules(LIBCRYPTO REQUIRED libcrypto)
 
 add_definitions(-DSINGLE_INSTANCE)
@@ -68,6 +87,8 @@ set(PROJECT_SOURCES
 add_executable(kmre-apk-installer
     ${PROJECT_SOURCES}
 )
+
+add_dependencies(kmre-apk-installer translations)
 
 set(QT_LIBRARIES
     Qt${QT_VERSION_MAJOR}::Core
