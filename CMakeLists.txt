@@ -45,9 +45,9 @@ add_definitions(-DQT_DEPRECATED_WARNINGS)
 
 execute_process(COMMAND lsb_release -d OUTPUT_VARIABLE DISTRIB_DESCRIPTION)
 execute_process(COMMAND grep -ci -e "Kylin\ V10\ Professional" -e "Kylin\ V10\ SP1" -e "Kylin\ V10\ SP2" /etc/lsb-release OUTPUT_VARIABLE V10_PRO OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(V10_PRO STREQUAL "0")
-    add_definitions(-DKYLIN_V10)
-endif()
+#if(V10_PRO STREQUAL "0")
+add_definitions(-DKYLIN_V10)
+#endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fpermissive -fPIC")
 

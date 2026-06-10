@@ -1,4 +1,4 @@
-kmre-apk-installer (3.1.0) UNRELEASED; urgency=medium
+kmre-apk-installer (3.1.1) UNRELEASED; urgency=medium
 
   * Non-maintainer upload.
   * 支持使用 aapt 读取 apk 信息
@@ -7,8 +7,10 @@ kmre-apk-installer (3.1.0) UNRELEASED; urgency=medium
   * 支持显示 apk 图标
   * 使用 cmake 进行构建
   * 迁移至 Qt6
+  * 修复双标题栏问题
+  * 优化窗口拖放逻辑
 
- -- gfdgd_xi <3025613752@qq.com>  Sat, 02 May 2026 15:39:03 +0800
+ -- gfdgd_xi <3025613752@qq.com>  Wed, 10 Jun 2026 13:31:09 +0800
 
 kmre-apk-installer (3.0.0.1) v101; urgency=medium
   
