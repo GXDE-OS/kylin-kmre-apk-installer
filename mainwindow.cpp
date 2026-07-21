@@ -329,6 +329,12 @@ void MainWindow::mousePressEvent(QMouseEvent *e)
 {
     QMainWindow::mousePressEvent(e);
     if (e->button() == Qt::LeftButton && !e->isAccepted()) {
+        if (QGuiApplication::platformName() == "wayland") {
+            if (windowHandle()) {
+                windowHandle()->startSystemMove();
+            }
+            return;
+        }
         m_is_draging = true;
         m_offset = mapFromGlobal(QCursor::pos());
     }
@@ -336,12 +342,11 @@ void MainWindow::mousePressEvent(QMouseEvent *e)
 
 void MainWindow::mouseMoveEvent(QMouseEvent *e)
 {
-    //NOTE: when starting a X11 window move, the mouse move event
-    //will unreachable when draging, and after draging we could not
-    //get the release event correctly.
-    //qDebug()<<"mouse move";
     QMainWindow::mouseMoveEvent(e);
     if (!m_is_draging)
+        return;
+
+    if (QGuiApplication::platformName() == "wayland")
         return;
 
     qreal  dpiRatio = qApp->devicePixelRatio();
@@ -350,13 +355,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *e)
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *e)
 {
-    /*!
-     * \bug
-     * release event sometimes "disappear" when we request
-     * X11 window manager for movement.
-     */
     QMainWindow::mouseReleaseEvent(e);
-    //qDebug()<<"mouse released";
     m_is_draging = false;
 }
 
